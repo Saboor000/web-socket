@@ -60,6 +60,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('sendMessage')
   handleMessage(
     @MessageBody() data: { user: string; text: string },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     @ConnectedSocket() client: Socket,
   ) {
     const message: ChatMessage = {
