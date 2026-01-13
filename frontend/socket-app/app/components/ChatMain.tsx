@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import Sidebar from "./Sidebar";
 import MessageList from "./MessageList";
@@ -21,14 +21,14 @@ interface ChatMainProps {
 const SOCKET_URL = "http://localhost:3001";
 
 export default function ChatMain({ username }: ChatMainProps) {
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const socketRef = useRef<Socket | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [users, setUsers] = useState<string[]>([]);
   const [typingUser, setTypingUser] = useState<string | null>(null);
 
   useEffect(() => {
     const newSocket = io(SOCKET_URL);
-    setSocket(newSocket);
+    socketRef.current = newSocket;
 
     newSocket.emit("join", username);
 
@@ -55,20 +55,20 @@ export default function ChatMain({ username }: ChatMainProps) {
 
   const sendMessage = useCallback(
     (text: string) => {
-      if (socket) {
-        socket.emit("sendMessage", { user: username, text });
-        socket.emit("stopTyping");
+      if (socketRef.current) {
+        socketRef.current.emit("sendMessage", { user: username, text });
+        socketRef.current.emit("stopTyping");
       }
     },
-    [socket, username]
+    [username]
   );
 
   const handleTyping = useCallback(() => {
-    if (socket) {
-      socket.emit("typing", username);
+    if (socketRef.current) {
+      socketRef.current.emit("typing", username);
       // Optional: debounced stopTyping
     }
-  }, [socket, username]);
+  }, [username]);
 
   return (
     <div className="flex h-screen w-full bg-[#0f1115] overflow-hidden">
